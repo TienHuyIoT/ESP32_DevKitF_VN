@@ -18,6 +18,10 @@
 #include "THIoT_FactoryButton.h"
 #include "esp_led_status.h"
 #include "audio_decoder.h"
+#include "platform_ticker.h"
+#include "platform_ticker.h"
+#include "at_cmd_handler.h"
+#include "app_at_handler.h"
 
 #define ARDUINO_RUNNING_CORE 1
 
@@ -36,8 +40,61 @@ ESPBlinkGPIO LEDStatus(LED_STATUS_GPIO, HIGH);
 #endif
 
 AUDIOEncoder PlayAudio(SD_FS_SYSTEM);
+APPATHandler atCommandHandler;
 
 void TaskAudio(void *pvParameters);
+
+uint32_t atOutputPortCallback(const uint8_t *s, uint32_t len)
+{
+  return AT_CMD_PORT.write(s, len);
+}
+
+uint32_t atInputPortCallback(uint8_t *s, uint32_t len)
+{
+  return AT_CMD_PORT.read(s, len);
+}
+
+void atCleanPortCallback(void)
+{
+  while(AT_CMD_PORT.available())
+  {
+    AT_CMD_PORT.read();
+  }
+}
+
+void board_setup()
+{
+    AT_CMD_PORT.begin(9600, SERIAL_8N1, AT_UART_RX, AT_UART_TX);
+    AT_CMD_PORT.printf("Hello serial1");
+
+    SX1278_NSS_PINMODE_INIT();
+    SX1278_NSS_RELEASE();    
+
+    atCommandHandler.onCleanPort(atCleanPortCallback);
+    atCommandHandler.onInputPort(atInputPortCallback);
+    atCommandHandler.onOutputPort(atOutputPortCallback);
+    atCommandHandler.run(at_fun_handle, AT_CMD_HANDLE_NUM);
+
+    // initialize SPI
+    SPI.begin(SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN);
+    PlayAudio.begin();
+    ESPWifi.onOTAStatus([](int type){
+        if (ESPWifiHandle::OTA_START == type)
+        {
+            /* Stop Playing decoder audio to improve performance speed download firmware */
+            PlayAudio.stop();
+        }
+    });
+
+    xTaskCreatePinnedToCore(
+        TaskAudio, "TaskAudio" // A name just for humans
+        ,
+        10 * 1024 // This stack size can be checked & adjusted by reading the Stack Highwater
+        ,
+        NULL, 2 // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
+        ,
+        NULL, ARDUINO_RUNNING_CORE);
+}
 
 void setup()
 {
@@ -150,25 +207,7 @@ void setup()
     factorySysParams.begin();
 #endif
 
-    // initialize SPI
-    SPI.begin(SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN);
-    PlayAudio.begin();
-    ESPWifi.onOTAStatus([](int type){
-        if (ESPWifiHandle::OTA_START == type)
-        {
-            /* Stop Playing decoder audio to improve performance speed download firmware */
-            PlayAudio.stop();
-        }
-    });
-
-    xTaskCreatePinnedToCore(
-        TaskAudio, "TaskAudio" // A name just for humans
-        ,
-        10 * 1024 // This stack size can be checked & adjusted by reading the Stack Highwater
-        ,
-        NULL, 2 // Priority, with 3 (configMAX_PRIORITIES - 1) being the highest, and 0 being the lowest.
-        ,
-        NULL, ARDUINO_RUNNING_CORE);
+    board_setup();
 }
 
 void TaskAudio(void *pvParameters)
@@ -190,4 +229,5 @@ void loop()
 #if (defined ETH_ENABLE) && (ETH_ENABLE == 1)
     Ethernet.loop();
 #endif
+    ticker_schedule_handler();
 }

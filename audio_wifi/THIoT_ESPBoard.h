@@ -15,6 +15,22 @@ SPI BUS
 #define VS1053_CS               SPI_NSS_PIN
 #define VS1053_DCS              0
 #define VS1053_DREQ             39
+
+#define GSM_UART_TX             33
+#define GSM_UART_RX             25
+
+#define AT_CMD_PORT             Serial1
+#define AT_UART_TX              GSM_UART_TX
+#define AT_UART_RX              GSM_UART_RX
+
+#define BUZZ_CONTROL            32
+
+#define W2812_DI                27
+
+#define SX1278_NSS_PIN          16
+#define SX1278_NSS_PINMODE_INIT()  pinMode(SX1278_NSS_PIN, OUTPUT)
+#define SX1278_NSS_RELEASE()       digitalWrite(SX1278_NSS_PIN, HIGH)
+
 #elif defined(ESP8266)
 #define SPI_SCK_PIN     		14
 #define SPI_MISO_PIN     		12
