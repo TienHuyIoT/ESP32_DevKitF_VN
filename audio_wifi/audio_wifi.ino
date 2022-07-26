@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <functional> // std::function
 #include "THIoT_ESPConfig.h"
+#include "THIoT_ESPBoard.h"
 #include "THIoT_ESPBlinkGPIO.h"
 #include "THIoT_SDFSClass.h"
 #include "THIoT_SerialTrace.h"
@@ -17,6 +18,8 @@
 #include "THIoT_ESPLogTrace.h"
 #include "THIoT_FactoryButton.h"
 #include "esp_led_status.h"
+#include "buzz_alarm.h"
+#include "led_alert.h"
 #include "audio_decoder.h"
 #include "platform_ticker.h"
 #include "platform_ticker.h"
@@ -38,6 +41,9 @@ FactoryButton factorySysParams(FACTORY_INPUT_PIN);
 #if (defined LED_STATUS_GPIO) && (LED_STATUS_GPIO != -1)
 ESPBlinkGPIO LEDStatus(LED_STATUS_GPIO, HIGH);
 #endif
+
+ESPBlinkGPIO BuzzAlarm(BUZZ_CONTROL, LOW);
+ESPBlinkGPIO LedAlert(BLINK_NOT_AVAILABLE);
 
 AUDIOEncoder PlayAudio(SD_FS_SYSTEM);
 APPATHandler atCommandHandler;
@@ -86,6 +92,12 @@ void board_setup()
         }
     });
 
+    BuzzAlarm.setCycleCallbacks(new BuzzAlarmCycleBlinkCallbacks());
+    BuzzAlarm.statusUpdate(BuzzAlarmCycleBlinkCallbacks::BUZZ_NORMAL);
+
+    LedAlert.setCycleCallbacks(new LedAlertCycleBlinkCallbacks());
+    LedAlert.statusUpdate(LedAlertCycleBlinkCallbacks::LED_NORMAL);
+
     xTaskCreatePinnedToCore(
         TaskAudio, "TaskAudio" // A name just for humans
         ,
@@ -120,9 +132,9 @@ void setup()
 #if (defined LED_STATUS_GPIO) && (LED_STATUS_GPIO != -1)
     LEDStatus.setCycleCallbacks(new ESPLedCycleBlinkCallbacks());
 #if (defined ETH_ENABLE) && (ETH_ENABLE == 1)
-    Ethernet.onLedStatus(std::bind(&ESPBlinkGPIO::statusUpdate, &LEDStatus, std::placeholders::_1));
+    Ethernet.onLedStatus(std::bind(&ESPBlinkGPIO::statusUpdate, &LEDStatus, std::placeholders::_1, 0));
 #endif
-    ESPWifi.onLedStatus(std::bind(&ESPBlinkGPIO::statusUpdate, &LEDStatus, std::placeholders::_1));
+    ESPWifi.onLedStatus(std::bind(&ESPBlinkGPIO::statusUpdate, &LEDStatus, std::placeholders::_1, 0));
     LEDStatus.statusUpdate(ESPLedCycleBlinkCallbacks::BLINK_NORMAL);
 #endif
 

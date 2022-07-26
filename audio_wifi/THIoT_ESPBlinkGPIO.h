@@ -4,6 +4,8 @@
 #include <Arduino.h>
 #include <Ticker.h>
 
+#define BLINK_NOT_AVAILABLE -1U
+
 typedef struct cycleTimeMs {
 public:
     int firstHalf;
@@ -16,6 +18,8 @@ class ESPBlinkCycleCallbacks
 public:
     ~ESPBlinkCycleCallbacks();
     virtual cycleTimeMs_t getCycle(int type);
+    virtual void firstHalf();
+    virtual void endHalf();
 };
 
 class ESPBlinkGPIO
@@ -32,11 +36,12 @@ private:
     void firstHalfLevel();
     void endHalfLevel();
 public:
-    ESPBlinkGPIO(const int gpio, const bool stLevel);
+    ESPBlinkGPIO(const int gpio = -1, const bool stLevel = LOW);
     ~ESPBlinkGPIO();
+    void counterSet(int counter);
     void attach(int firstHalf_ms, int endHalf_ms, int counter = 0 /* Forever */);
     void detach();
-    void statusUpdate(int source);
+    void statusUpdate(int source, int counter = 0);
     void setCycleCallbacks(ESPBlinkCycleCallbacks* cb);
 };
 
