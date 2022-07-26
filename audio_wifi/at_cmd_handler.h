@@ -9,7 +9,10 @@
 typedef enum : uint8_t {
 /*00*/AT_CMD = 0,
 /*01*/AT_QUESTION,
-/*02*/AT_CMD_HANDLE_NUM
+/*02*/AT_NEW_DRIVER,
+/*03*/AT_DROWSINESS,
+/*04*/AT_NO_DRIVER,
+/*05*/AT_CMD_HANDLE_NUM
 } at_cmd_handle_t;
 
 extern at_funcation_t at_fun_handle[];

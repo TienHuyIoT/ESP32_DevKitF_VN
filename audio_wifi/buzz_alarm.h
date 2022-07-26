@@ -11,7 +11,9 @@ public:
     ~BuzzAlarmCycleBlinkCallbacks(){}
     enum : uint8_t {
         BUZZ_NORMAL = 0,
-        BUZZ_ALARM
+        BUZZ_ALARM,
+        BUZZ_NEW_DRIVER,
+        BUZZ_NO_DRIVER
     };
 
     cycleTimeMs_t getCycle(int type) override {
@@ -20,10 +22,16 @@ public:
         switch (type)
         {
         case BUZZ_NORMAL:
-            cycleTime = cycleTimeMs(1000, 1000);
+            cycleTime = cycleTimeMs(100, 900);
             break;
         case BUZZ_ALARM:
-            cycleTime = cycleTimeMs(100, 500);
+            cycleTime = cycleTimeMs(100, 100);
+            break;
+        case BUZZ_NEW_DRIVER:
+            cycleTime = cycleTimeMs(100, 100);
+            break;
+        case BUZZ_NO_DRIVER:
+            cycleTime = cycleTimeMs(100, 100);
             break;
         default:
             break;

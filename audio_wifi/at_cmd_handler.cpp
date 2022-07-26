@@ -32,8 +32,11 @@ static void at_exe_cmd_null(at_funcation_t *at);
 /* cmd_name, cmd_len, (*test_cmd), (*query_cmd), (*setup_cmd), (*exe_cmd)
  *         ,        , AT+<CMD>=?\r, AT+<CMD>?\r, AT+<CMD>=..\r, AT+<CMD>\r */
 at_funcation_t at_fun_handle[AT_CMD_HANDLE_NUM] = {
-  {(const char *)""           ,  0, nullptr, nullptr , nullptr , at_exe_cmd_null},
-  {(const char *)"+QUESTION"  ,  9, nullptr, nullptr , nullptr , nullptr}
+  {(const char *)""           ,  0 , nullptr, nullptr , nullptr , at_exe_cmd_null},
+  {(const char *)"+QUESTION"  ,  9 , nullptr, nullptr , nullptr , nullptr},
+  {(const char *)"+NEW_DRIVER",  11, nullptr, nullptr , nullptr , nullptr},
+  {(const char *)"+DROWSINESS",  11, nullptr, nullptr , nullptr , nullptr},
+  {(const char *)"+NO_DRIVER" ,  10, nullptr, nullptr , nullptr , nullptr}
 };
 
 static void at_exe_cmd_null(at_funcation_t *at)

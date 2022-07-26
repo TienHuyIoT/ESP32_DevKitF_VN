@@ -93,10 +93,10 @@ void board_setup()
     });
 
     BuzzAlarm.setCycleCallbacks(new BuzzAlarmCycleBlinkCallbacks());
-    BuzzAlarm.statusUpdate(BuzzAlarmCycleBlinkCallbacks::BUZZ_NORMAL);
+    BuzzAlarm.statusUpdate(BuzzAlarmCycleBlinkCallbacks::BUZZ_NORMAL, 3);
 
     LedAlert.setCycleCallbacks(new LedAlertCycleBlinkCallbacks());
-    LedAlert.statusUpdate(LedAlertCycleBlinkCallbacks::LED_NORMAL);
+    LedAlert.statusUpdate(LedAlertCycleBlinkCallbacks::LED_NORMAL, 3);
 
     xTaskCreatePinnedToCore(
         TaskAudio, "TaskAudio" // A name just for humans
@@ -226,7 +226,7 @@ void TaskAudio(void *pvParameters)
 {
     (void)pvParameters;
 
-    PlayAudio.playFile("/DAUMUA.MP3");
+    // PlayAudio.playFile("/DAUMUA.MP3");
 
     for (;;) // A Task shall never return or exit.
     {

@@ -1,6 +1,9 @@
 #include "app_at_handler.h"
 #include "c_utility.h"
 #include "THIoT_SerialTrace.h"
+#include "audio_decoder.h"
+#include "buzz_alarm.h"
+#include "led_alert.h"
 
 #define APP_AT_FUNC_TAG_CONSOLE(...) SERIAL_FUNCTION_TAG_LOGI("[APP_AT] ", __VA_ARGS__)
 
@@ -8,9 +11,32 @@
 #define EQUATION_CODE(x)            (((x + 6) / 7) * 5 + 1)
 #define AT_CMD_DYNAMIC_BUFF_SIZE    64
 #define AT_CMD_CRC_LENGTH           5
-#define AT_CMD_BUFF_SIZE            128 /* 128 byte data */
+#define AT_CMD_BUFF_SIZE            64 /* 64 byte data */
 #define AT_CMD_POLLING_HANDLER_MS   10
 
+extern AUDIOEncoder PlayAudio;
+extern ESPBlinkGPIO BuzzAlarm;
+extern ESPBlinkGPIO LedAlert;
+
+/* The counter number blink buzz and led */
+enum : uint8_t {
+    ALARM_NEW_DRIVER_CNT = 2,
+    ALARM_NO_DRIVER_CNT = 1,
+    ALARM_DROWSINESS_CNT = 20
+};
+
+enum : uint8_t {
+    NEW_DRIVER_ID = 0,
+    DROWSINESS_ID,
+    NO_DRIVER_ID,
+    AUDIO_LIST_ID_NUM
+};
+
+const char* const audioList[] PROGMEM = {
+ "/DAUMUA.MP3",
+ "/DROWSINESS.MP3",
+ "/NO_DRIVER.MP3"
+};
 
 static char* truncate_last_character(char *buff, int character)
 {
@@ -83,7 +109,26 @@ void APPATHandler::run(at_funcation_t* tableHandler, uint8_t cmdNumber)
         atHandler->cmdSetupQuestionHandle(at, data);
     }, this);
 
+    /* Register new driver exe command */
+    at_exe_attach_cb(AT_NEW_DRIVER, [](at_funcation* at){
+        APPATHandler* atHandler = (APPATHandler*)(at->arg);
+        atHandler->cmdExeNewDriverHandle(at);
+    }, this);
+
+    /* Register drowsiness exe command */
+    at_exe_attach_cb(AT_DROWSINESS, [](at_funcation* at){
+        APPATHandler* atHandler = (APPATHandler*)(at->arg);
+        atHandler->cmdExeDrowsinessHandle(at);
+    }, this);
+
+    /* Register no driver exe command */
+    at_exe_attach_cb(AT_NO_DRIVER, [](at_funcation* at){
+        APPATHandler* atHandler = (APPATHandler*)(at->arg);
+        atHandler->cmdExeNoDriverHandle(at);
+    }, this);
+
     cleanPort();
+
     /* Ticker in main-loop will handle the refresh() function */
     ticker_attach_ms(&_tickerAtCmdCapture, AT_CMD_POLLING_HANDLER_MS, [](void* arg){
         APPATHandler* atHandler = (APPATHandler*)(arg);
@@ -123,6 +168,36 @@ void APPATHandler::cmdSetupQuestionHandle(at_funcation* at, char *data)
     /* Assign variable element */
     uint32_t tagCode = element[0];
     sendRespCodeOK(at, tagCode);
+}
+
+void APPATHandler::cmdExeNewDriverHandle(at_funcation* at)
+{
+    APP_AT_FUNC_TAG_CONSOLE("execution");
+    sendRespCodeOK(at, 12345);
+    BuzzAlarm.statusUpdate(BuzzAlarmCycleBlinkCallbacks::BUZZ_NEW_DRIVER, ALARM_NEW_DRIVER_CNT);
+    LedAlert.statusUpdate(LedAlertCycleBlinkCallbacks::LED_NEW_DRIVER, ALARM_NEW_DRIVER_CNT);
+
+    PlayAudio.playFile(audioList[NEW_DRIVER_ID], 5);
+}
+
+void APPATHandler::cmdExeDrowsinessHandle(at_funcation* at)
+{
+    APP_AT_FUNC_TAG_CONSOLE("execution");
+    sendRespCodeOK(at, 12345);
+    BuzzAlarm.statusUpdate(BuzzAlarmCycleBlinkCallbacks::BUZZ_ALARM, ALARM_DROWSINESS_CNT);
+    LedAlert.statusUpdate(LedAlertCycleBlinkCallbacks::LED_ALERT, ALARM_DROWSINESS_CNT);
+    
+    PlayAudio.playFile(audioList[DROWSINESS_ID]);
+}
+
+void APPATHandler::cmdExeNoDriverHandle(at_funcation* at)
+{
+    APP_AT_FUNC_TAG_CONSOLE("execution");
+    sendRespCodeOK(at, 12345);
+    BuzzAlarm.statusUpdate(BuzzAlarmCycleBlinkCallbacks::BUZZ_NO_DRIVER, ALARM_NO_DRIVER_CNT);
+    LedAlert.statusUpdate(LedAlertCycleBlinkCallbacks::LED_NO_DRIVER, ALARM_NO_DRIVER_CNT);
+
+    PlayAudio.playFile(audioList[NO_DRIVER_ID]);
 }
 
 void APPATHandler::sendRespCodeOK(at_funcation* at, uint32_t tagCode)
@@ -165,23 +240,3 @@ void APPATHandler::onCleanPort(void (*cb)())
 {
     _cleanPort = cb;
 }
-
-#if (0)
-SerialHandleCallbacks::SerialHandleCallbacks(/* args */) {}
-SerialHandleCallbacks::~SerialHandleCallbacks() {}
-
-size_t SerialHandleCallbacks::onOutputPort(const uint8_t* buff, size_t length)
-{
-    APP_AT_FUNC_TAG_CONSOLE("[SerialHandleCallbacks]>> default <<");
-    return 0;
-}
-size_t SerialHandleCallbacks::onInputPort(uint8_t* buff, size_t length)
-{
-    APP_AT_FUNC_TAG_CONSOLE("[SerialHandleCallbacks]>> default <<");
-    return 0;
-}
-void SerialHandleCallbacks::onCleanPort()
-{
-    APP_AT_FUNC_TAG_CONSOLE("[SerialHandleCallbacks]>> default <<");
-}
-#endif

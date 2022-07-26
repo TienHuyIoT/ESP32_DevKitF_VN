@@ -5,21 +5,6 @@
 #include "platform_ticker.h"
 #include "at_cmd_handler.h"
 
-#if (0)
-class SerialHandleCallbacks
-{
-private:
-    /* data */
-public:
-    SerialHandleCallbacks(/* args */);
-    virtual ~SerialHandleCallbacks();
-
-    virtual size_t onOutputPort(const uint8_t*, size_t);
-    virtual size_t onInputPort(uint8_t*, size_t);
-    virtual void onCleanPort();
-};
-#endif
-
 class APPATHandler
 {
 public:
@@ -37,6 +22,9 @@ private:
 #endif
     void (*_cleanPort)();
     void cmdSetupQuestionHandle(at_funcation* at, char *data);
+    void cmdExeNewDriverHandle(at_funcation* at);
+    void cmdExeDrowsinessHandle(at_funcation* at);
+    void cmdExeNoDriverHandle(at_funcation* at);
 
     void sendRespCode(at_funcation* at, uint32_t tagCode, uint8_t status);
     void sendRespCodeOK(at_funcation* at, uint32_t tagCode);

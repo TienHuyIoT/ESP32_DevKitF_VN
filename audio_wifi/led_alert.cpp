@@ -18,7 +18,7 @@ LedAlertCycleBlinkCallbacks::LedAlertCycleBlinkCallbacks()
 {
     pixels.begin(); // INITIALIZE NeoPixel strip object (REQUIRED)
     pixels.clear(); // Set all pixel colors to 'off'
-    pixels.setBrightness(100);
+    pixels.setBrightness(10);
 }
 
 cycleTimeMs_t LedAlertCycleBlinkCallbacks::getCycle(int type) {
@@ -27,7 +27,7 @@ cycleTimeMs_t LedAlertCycleBlinkCallbacks::getCycle(int type) {
     switch (type)
     {
     case LED_NORMAL:
-        cycleTime = cycleTimeMs(1000, 1000);
+        cycleTime = cycleTimeMs(1000, 500);
         _ledColor.red = 0;
         _ledColor.green = 150;
         _ledColor.blue = 0;
@@ -37,6 +37,18 @@ cycleTimeMs_t LedAlertCycleBlinkCallbacks::getCycle(int type) {
         _ledColor.red = 150;
         _ledColor.green = 0;
         _ledColor.blue = 0;
+        break;
+    case LED_NEW_DRIVER:
+        cycleTime = cycleTimeMs(1000, 100);
+        _ledColor.red = 0;
+        _ledColor.green = 0;
+        _ledColor.blue = 150;
+        break;
+    case LED_NO_DRIVER:
+        cycleTime = cycleTimeMs(500, 100);
+        _ledColor.red = 150;
+        _ledColor.green = 0;
+        _ledColor.blue = 150;
         break;
     default:
         break;

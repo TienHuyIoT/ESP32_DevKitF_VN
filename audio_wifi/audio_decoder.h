@@ -17,8 +17,10 @@ private:
     VS1053 player;
     fs::FS* _fs;
     String _fileName;
+    int _repeatNumber;
     int _playingStatus;
-    xSemaphoreHandle _xb_semaphore;
+    xSemaphoreHandle _xb_semaphore_play;
+    xSemaphoreHandle _xb_semaphore_stop;
     xSemaphoreHandle xMutex_PlayingStatus;
     int playingStatusGet();
     void playingStatusSet(int status);
@@ -33,7 +35,7 @@ public:
     ~AUDIOEncoder();
     void begin();
     /* Play a MP3 file */
-    void playFile(const char* fileName);
+    void playFile(const char* fileName, int repeatNumber = 0);
     /* Force stop while playing */
     void stop();
     /* Handle in loop */

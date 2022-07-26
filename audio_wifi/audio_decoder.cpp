@@ -7,7 +7,8 @@
 AUDIOEncoder::AUDIOEncoder(fs::FS &fs)
     : _fs(&fs), player(VS1053_CS, VS1053_DCS, VS1053_DREQ)
 {
-    vSemaphoreCreateBinary(_xb_semaphore);
+    vSemaphoreCreateBinary(_xb_semaphore_play);
+    vSemaphoreCreateBinary(_xb_semaphore_stop);
     xMutex_PlayingStatus = xSemaphoreCreateMutex();
 }
 
@@ -28,15 +29,18 @@ void AUDIOEncoder::begin()
     player.switchToMp3Mode(); // optional, some boards require this
     player.setVolume(VS1053_VOLUME_DEFAULT);
 
-    xSemaphoreTake(_xb_semaphore, 0);
+    xSemaphoreTake(_xb_semaphore_play, 0);
+    xSemaphoreTake(_xb_semaphore_stop, 0);
 }
 
-void AUDIOEncoder::playFile(const char *fileName)
+void AUDIOEncoder::playFile(const char *fileName, int repeatNumber)
 {
     AUDIO_ENCODER_TAG_CONSOLE("Play sound %s", fileName);
+    stop();
     _fileName = fileName;
+    _repeatNumber = repeatNumber;
     playingStatusSet(AUDIOEncoder::AUDIO_PLAYING);
-    xSemaphoreGive(_xb_semaphore);
+    xSemaphoreGive(_xb_semaphore_play);
 }
 
 void AUDIOEncoder::stop()
@@ -46,11 +50,13 @@ void AUDIOEncoder::stop()
         playingStatusSet(AUDIOEncoder::AUDIO_STOP);
         AUDIO_ENCODER_TAG_CONSOLE("Stop sound %s", _fileName.c_str());
     }
+    /* Wait handle task reached end */
+    xSemaphoreTake(_xb_semaphore_stop, 200 / portTICK_PERIOD_MS);
 }
 
 void AUDIOEncoder::handle()
 {
-    xSemaphoreTake(_xb_semaphore, portMAX_DELAY);
+    xSemaphoreTake(_xb_semaphore_play, portMAX_DELAY);
     boolean runFlag = 1;
     File audioFile = _fs->open(_fileName);
     if (!audioFile)
@@ -70,15 +76,28 @@ void AUDIOEncoder::handle()
             int length = audioFile.read(buff, AUDIO_BUFF_SIZE);
             if (0 == length)
             {
-                break;
+                AUDIO_ENCODER_TAG_CONSOLE("_repeatNumber = %u", _repeatNumber);
+                if (_repeatNumber > 0)
+                {
+                    --_repeatNumber;
+                    audioFile.seek(0);
+                }
+                else
+                {
+                    break;
+                }
             }
-            player.playChunk(buff, length);
+            else
+            {
+                player.playChunk(buff, length);
+            }
         }
     }
     playTimeMs = millis() - playTimeMs;
     AUDIO_ENCODER_TAG_CONSOLE("End %s, Play time = %u(s)", _fileName.c_str(), playTimeMs/1000);
     free(buff);
     audioFile.close();
+    xSemaphoreGive(_xb_semaphore_stop);
 }
 
 int AUDIOEncoder::playingStatusGet()

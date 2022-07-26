@@ -19,7 +19,9 @@ public:
     LedAlertCycleBlinkCallbacks();
     enum : uint8_t {
         LED_NORMAL = 0,
-        LED_ALERT
+        LED_ALERT,
+        LED_NEW_DRIVER,
+        LED_NO_DRIVER
     };
 
     cycleTimeMs_t getCycle(int type) override;
