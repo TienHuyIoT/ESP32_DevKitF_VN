@@ -10,6 +10,7 @@
 #include "THIoT_ESPEventSignal.h"
 
 typedef std::function<void(int type)> WiFiLedStatusHandler;
+typedef std::function<void(int type)> WiFiOTAHandler;
 
 class ESPSntpService
 {
@@ -53,7 +54,7 @@ private:
     void onDDNSclient();  // DDNS client service
 #endif
 
-    static Ticker _reconnetTicker;
+    static Ticker _reconnectTicker;
 #ifdef ESP8266
     WiFiEventHandler _accessPointConnectedHandler;
     WiFiEventHandler _accessPointDisconnectedHandler;
@@ -64,9 +65,16 @@ private:
     void registerEventHandler();   // wifi event
     static bool _wifiConnected;
     static WiFiLedStatusHandler _ledStatusFunc;
+    static WiFiOTAHandler _wifiOTAFunc;
 public:
     ESPWifiHandle(/* args */);
     ~ESPWifiHandle();
+    enum : uint8_t {
+        OTA_START = 0,
+        OTA_PROGRESS,
+        OTA_END,
+        OTA_ERROR
+    };
 
 #if (defined DDNS_CLIENT_ENABLE) && (DDNS_CLIENT_ENABLE == 1)  
     static ESPAsyncEasyDDNS* ddnsClient;
@@ -80,6 +88,10 @@ public:
     void onLedStatus(WiFiLedStatusHandler handler)
     {
         _ledStatusFunc = handler;
+    }
+    void onOTAStatus(WiFiOTAHandler handler)
+    {
+        _wifiOTAFunc = handler;
     }
 };
 

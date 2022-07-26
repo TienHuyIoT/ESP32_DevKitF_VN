@@ -153,7 +153,13 @@ void setup()
     // initialize SPI
     SPI.begin(SPI_SCK_PIN, SPI_MISO_PIN, SPI_MOSI_PIN);
     PlayAudio.begin();
-
+    ESPWifi.onOTAStatus([](int type){
+        if (ESPWifiHandle::OTA_START == type)
+        {
+            /* Stop Playing decoder audio to improve performance speed download firmware */
+            PlayAudio.stop();
+        }
+    });
 
     xTaskCreatePinnedToCore(
         TaskAudio, "TaskAudio" // A name just for humans
