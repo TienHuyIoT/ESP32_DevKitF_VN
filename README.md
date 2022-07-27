@@ -8,7 +8,6 @@
 - [EasyDDNS](https://github.com/ayushsharma82/EasyDDNS) - C++
 - [ArduinoJson](https://github.com/bblanchon/ArduinoJson/tree/5.x) - C++
 - [oneButton](https://github.com/mathertel/OneButton) - C++
-- [oneButton](https://github.com/mathertel/OneButton) - C++
 - [ESP_VS1053_Library](https://github.com/baldram/ESP_VS1053_Library) - C++
 - [Adafruit_NeoPixel](https://github.com/adafruit/Adafruit_NeoPixel) - C++
 
