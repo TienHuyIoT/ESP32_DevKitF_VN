@@ -22,7 +22,7 @@ public:
         switch (type)
         {
         case BUZZ_NORMAL:
-            cycleTime = cycleTimeMs(100, 900);
+            cycleTime = cycleTimeMs(100, 400);
             break;
         case BUZZ_ALARM:
             cycleTime = cycleTimeMs(100, 100);

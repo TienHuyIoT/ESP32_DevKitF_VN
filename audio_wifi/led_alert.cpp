@@ -39,13 +39,13 @@ cycleTimeMs_t LedAlertCycleBlinkCallbacks::getCycle(int type) {
         _ledColor.blue = 0;
         break;
     case LED_NEW_DRIVER:
-        cycleTime = cycleTimeMs(1000, 100);
+        cycleTime = cycleTimeMs(500, 500);
         _ledColor.red = 0;
         _ledColor.green = 0;
         _ledColor.blue = 150;
         break;
     case LED_NO_DRIVER:
-        cycleTime = cycleTimeMs(500, 100);
+        cycleTime = cycleTimeMs(500, 500);
         _ledColor.red = 150;
         _ledColor.green = 0;
         _ledColor.blue = 150;

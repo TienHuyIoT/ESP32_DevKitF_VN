@@ -35,7 +35,7 @@ public:
     ~AUDIOEncoder();
     void begin();
     /* Play a MP3 file */
-    void playFile(const char* fileName, int repeatNumber = 0);
+    boolean playFile(const char* fileName, int repeatNumber = 0);
     /* Force stop while playing */
     void stop();
     /* Handle in loop */

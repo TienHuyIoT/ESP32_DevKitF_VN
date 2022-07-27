@@ -33,14 +33,23 @@ void AUDIOEncoder::begin()
     xSemaphoreTake(_xb_semaphore_stop, 0);
 }
 
-void AUDIOEncoder::playFile(const char *fileName, int repeatNumber)
+boolean AUDIOEncoder::playFile(const char *fileName, int repeatNumber)
 {
     AUDIO_ENCODER_TAG_CONSOLE("Play sound %s", fileName);
+    if (playingStatusGet() == AUDIOEncoder::AUDIO_PLAYING)
+    {
+        if(_fileName == fileName)
+        {
+            AUDIO_ENCODER_TAG_CONSOLE("The %s is playing", fileName);
+            return false;
+        }
+    }
     stop();
     _fileName = fileName;
     _repeatNumber = repeatNumber;
     playingStatusSet(AUDIOEncoder::AUDIO_PLAYING);
     xSemaphoreGive(_xb_semaphore_play);
+    return true;
 }
 
 void AUDIOEncoder::stop()
@@ -97,6 +106,7 @@ void AUDIOEncoder::handle()
     AUDIO_ENCODER_TAG_CONSOLE("End %s, Play time = %u(s)", _fileName.c_str(), playTimeMs/1000);
     free(buff);
     audioFile.close();
+    _fileName = "";
     xSemaphoreGive(_xb_semaphore_stop);
 }
 

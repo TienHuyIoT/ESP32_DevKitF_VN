@@ -70,7 +70,7 @@ void atCleanPortCallback(void)
 
 void board_setup()
 {
-    AT_CMD_PORT.begin(9600, SERIAL_8N1, AT_UART_RX, AT_UART_TX);
+    AT_CMD_PORT.begin(38400, SERIAL_8N1, AT_UART_RX, AT_UART_TX);
     AT_CMD_PORT.printf("Hello serial1");
 
     SX1278_NSS_PINMODE_INIT();

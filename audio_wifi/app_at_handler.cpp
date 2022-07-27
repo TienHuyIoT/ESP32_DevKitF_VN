@@ -26,6 +26,12 @@ enum : uint8_t {
 };
 
 enum : uint8_t {
+    NEW_DRIVER_REPEAT = 0,
+    DROWSINESS_REPEAT = 1,
+    NO_DRIVER_REPEAT = 0
+};
+
+enum : uint8_t {
     NEW_DRIVER_ID = 0,
     DROWSINESS_ID,
     NO_DRIVER_ID,
@@ -33,7 +39,7 @@ enum : uint8_t {
 };
 
 const char* const audioList[] PROGMEM = {
- "/DAUMUA.MP3",
+ "/NEW_DRIVER.MP3",
  "/DROWSINESS.MP3",
  "/NO_DRIVER.MP3"
 };
@@ -174,30 +180,36 @@ void APPATHandler::cmdExeNewDriverHandle(at_funcation* at)
 {
     APP_AT_FUNC_TAG_CONSOLE("execution");
     sendRespCodeOK(at, 12345);
-    BuzzAlarm.statusUpdate(BuzzAlarmCycleBlinkCallbacks::BUZZ_NEW_DRIVER, ALARM_NEW_DRIVER_CNT);
-    LedAlert.statusUpdate(LedAlertCycleBlinkCallbacks::LED_NEW_DRIVER, ALARM_NEW_DRIVER_CNT);
 
-    PlayAudio.playFile(audioList[NEW_DRIVER_ID], 5);
+    if (PlayAudio.playFile(audioList[NEW_DRIVER_ID], NEW_DRIVER_REPEAT))
+    {
+        BuzzAlarm.statusUpdate(BuzzAlarmCycleBlinkCallbacks::BUZZ_NEW_DRIVER, ALARM_NEW_DRIVER_CNT);
+        LedAlert.statusUpdate(LedAlertCycleBlinkCallbacks::LED_NEW_DRIVER, ALARM_NEW_DRIVER_CNT);
+    }
 }
 
 void APPATHandler::cmdExeDrowsinessHandle(at_funcation* at)
 {
     APP_AT_FUNC_TAG_CONSOLE("execution");
     sendRespCodeOK(at, 12345);
-    BuzzAlarm.statusUpdate(BuzzAlarmCycleBlinkCallbacks::BUZZ_ALARM, ALARM_DROWSINESS_CNT);
-    LedAlert.statusUpdate(LedAlertCycleBlinkCallbacks::LED_ALERT, ALARM_DROWSINESS_CNT);
     
-    PlayAudio.playFile(audioList[DROWSINESS_ID]);
+    if (PlayAudio.playFile(audioList[DROWSINESS_ID], DROWSINESS_REPEAT))
+    {
+        BuzzAlarm.statusUpdate(BuzzAlarmCycleBlinkCallbacks::BUZZ_ALARM, ALARM_DROWSINESS_CNT);
+        LedAlert.statusUpdate(LedAlertCycleBlinkCallbacks::LED_ALERT, ALARM_DROWSINESS_CNT);
+    }
 }
 
 void APPATHandler::cmdExeNoDriverHandle(at_funcation* at)
 {
     APP_AT_FUNC_TAG_CONSOLE("execution");
     sendRespCodeOK(at, 12345);
-    BuzzAlarm.statusUpdate(BuzzAlarmCycleBlinkCallbacks::BUZZ_NO_DRIVER, ALARM_NO_DRIVER_CNT);
-    LedAlert.statusUpdate(LedAlertCycleBlinkCallbacks::LED_NO_DRIVER, ALARM_NO_DRIVER_CNT);
 
-    PlayAudio.playFile(audioList[NO_DRIVER_ID]);
+    if (PlayAudio.playFile(audioList[NO_DRIVER_ID], NO_DRIVER_REPEAT))
+    {
+        BuzzAlarm.statusUpdate(BuzzAlarmCycleBlinkCallbacks::BUZZ_NO_DRIVER, ALARM_NO_DRIVER_CNT);
+        LedAlert.statusUpdate(LedAlertCycleBlinkCallbacks::LED_NO_DRIVER, ALARM_NO_DRIVER_CNT);
+    }
 }
 
 void APPATHandler::sendRespCodeOK(at_funcation* at, uint32_t tagCode)
