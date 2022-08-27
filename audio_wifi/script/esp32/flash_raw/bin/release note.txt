@@ -1,3 +1,6 @@
+V1.0.1
+- Handle new driver setup command
+
 V1.0.0
 - AT+NEW_DRIVER
 - AT+DROWSINESS

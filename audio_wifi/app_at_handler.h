@@ -22,8 +22,12 @@ private:
 #endif
     void (*_cleanPort)();
     void cmdSetupQuestionHandle(at_funcation* at, char *data);
+
     void cmdExeNewDriverHandle(at_funcation* at);
+    void cmdSetupNewDriverHandle(at_funcation* at, char* data);
+
     void cmdExeDrowsinessHandle(at_funcation* at);
+    
     void cmdExeNoDriverHandle(at_funcation* at);
 
     void sendRespCode(at_funcation* at, uint32_t tagCode, uint8_t status);

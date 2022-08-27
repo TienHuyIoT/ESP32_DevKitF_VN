@@ -121,6 +121,12 @@ void APPATHandler::run(at_funcation_t* tableHandler, uint8_t cmdNumber)
         atHandler->cmdExeNewDriverHandle(at);
     }, this);
 
+    /* Register new driver setup command */
+    at_setup_attach_cb(AT_NEW_DRIVER, [](at_funcation* at, char *data){
+        APPATHandler* atHandler = (APPATHandler*)(at->arg);
+        atHandler->cmdSetupNewDriverHandle(at, data);
+    }, this);
+
     /* Register drowsiness exe command */
     at_exe_attach_cb(AT_DROWSINESS, [](at_funcation* at){
         APPATHandler* atHandler = (APPATHandler*)(at->arg);
@@ -185,6 +191,46 @@ void APPATHandler::cmdExeNewDriverHandle(at_funcation* at)
     {
         BuzzAlarm.statusUpdate(BuzzAlarmCycleBlinkCallbacks::BUZZ_NEW_DRIVER, ALARM_NEW_DRIVER_CNT);
         LedAlert.statusUpdate(LedAlertCycleBlinkCallbacks::LED_NEW_DRIVER, ALARM_NEW_DRIVER_CNT);
+    }
+}
+
+/** Handle setup question command
+ * Receive: <driver name id>
+ * Resp: \r\n+NEW_DRIVER:<SPACE>,<status>,<CRC>\r\n
+ * status=0: OK
+ * status=1: FAIL
+ *
+ * Example: set question AT+NEW_DRIVER=<driver name id>$0D
+ * Resp OK:    \r\n+NEW_DRIVER: 0,27\r\n\r\nOK\r\n
+ * Resp ERROR: \r\n+NEW_DRIVER: 1,26\r\n\r\nOK\r\n
+*/
+void APPATHandler::cmdSetupNewDriverHandle(at_funcation* at, char* data)
+{
+    constexpr uint8_t ELEMENT_NUM = 1;
+    long element[ELEMENT_NUM];
+    uint8_t fields;
+
+    fields = long_strtok(data, ",", element, ELEMENT_NUM);
+    APP_AT_FUNC_TAG_CONSOLE("Fields = %u", fields);
+    if (fields != ELEMENT_NUM)
+    {
+        APP_AT_FUNC_TAG_CONSOLE("Parser Failed, expected is %u", ELEMENT_NUM);
+        return;
+    }
+
+    constexpr uint8_t DRIVER_NAME_LENGTH_MAX = 15;
+    char driverNameId[DRIVER_NAME_LENGTH_MAX];
+    snprintf(driverNameId, DRIVER_NAME_LENGTH_MAX, "/%u.MP3", element[0]);
+
+    if (PlayAudio.playFile(driverNameId, NEW_DRIVER_REPEAT))
+    {
+        BuzzAlarm.statusUpdate(BuzzAlarmCycleBlinkCallbacks::BUZZ_NEW_DRIVER, ALARM_NEW_DRIVER_CNT);
+        LedAlert.statusUpdate(LedAlertCycleBlinkCallbacks::LED_NEW_DRIVER, ALARM_NEW_DRIVER_CNT);
+        sendRespCodeOK(at, 11111);
+    }
+    else
+    {
+        sendRespCode(at, 22222, atCmdStatus::STATUS_ERROR);
     }
 }
 
